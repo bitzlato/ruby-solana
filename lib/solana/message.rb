@@ -35,8 +35,7 @@ module Solana
 
         data_length = Utils.decode_length(bytes)
         data_bytes = bytes.slice!(0, data_length)
-        data = Utils.bytes_to_base58(data_bytes)
-        {program_id_index: program_id_index, accounts: accounts, data: data}
+        {program_id_index: program_id_index, accounts: accounts, data: data_bytes}
       end
       self.new({
         header: {
@@ -63,7 +62,7 @@ module Solana
         recent_blockhash: Solana::Sedes::Blob.new(32)
       })
 
-      data = layout.serialize({
+      sign_data = layout.serialize({
         num_required_signatures: header[:num_required_signatures],
         num_readonly_signed_accounts: header[:num_readonly_signed_accounts],
         num_readonly_unsigned_accounts: header[:num_readonly_unsigned_accounts],
@@ -71,8 +70,6 @@ module Solana
         keys: account_keys.map{|x| Utils.base58_to_bytes(x)},
         recent_blockhash: Utils.base58_to_bytes(recent_blockhash)
       })
-
-      sign_data = data.bytes
 
       instruction_count = Utils.encode_length(@instructions.length)
       sign_data += instruction_count
@@ -86,17 +83,16 @@ module Solana
           data: Solana::Sedes::Sequence.new(num_keys, Solana::Sedes::UnsignedInt.new(8)),
         })
 
-        data = Utils.base58_to_bytes(instruction[:data])
         key_indices_count = Utils.encode_length(instruction[:accounts].length)
-        data_count = Utils.encode_length(data.length)
+        data_count = Utils.encode_length(instruction[:data].length)
 
         instruction_layout.serialize({
           program_id_index: instruction[:program_id_index],
           key_indices_count: key_indices_count,
           key_indices: instruction[:accounts],
           data_length: data_count,
-          data: data
-        }).bytes
+          data: instruction[:data]
+        })
       end.flatten
 
       sign_data += data

@@ -1,6 +1,8 @@
 module Solana
   module Sedes
     class NearInt64
+      attr_reader :size
+
       V2E32 = 2.pow(32)
 
       def initialize
@@ -10,21 +12,18 @@ module Solana
       def serialize(obj)
         uint = UnsignedInt.new(32)
         numbers = divmod_int64(obj)
-        numbers.map{|x| uint.serialize(x)}.join
+        numbers.map{|x| uint.serialize(x)}.flatten
         # if @size && obj >= 256**@size
         #   raise "Integer too large (does not fit in #{@size} bytes)"
         # end
       end
 
-      def deserialize(serial)
-        # raise "Invalid serialization (wrong size)" if @size && serial.size != @size
-        # raise  "Invalid serialization (not minimal length)" if !@size && serial.size > 0
-
+      def deserialize(bytes)
+        raise "Invalid serialization (wrong size)" if @size && bytes.size != @size
         uint = UnsignedInt.new(32)
-
         half_size = @size/2
 
-        lo, hi = [serial[0..half_size-1], serial[half_size..-1]].map{|x| uint.deserialize(x)}
+        lo, hi = [bytes[0..half_size-1], bytes[half_size..-1]].map{|x| uint.deserialize(x)}
 
         rounded_int64(hi, lo)
       end

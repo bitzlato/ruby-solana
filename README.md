@@ -1,8 +1,6 @@
 # Solana
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/solana`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+Ruby library for solana blockchain. It support generation and storing keys, generating and signing transactions. 
 
 ## Installation
 
@@ -21,19 +19,19 @@ Or install it yourself as:
     $ gem install solana
 
 ## Usage
+  ## Keys
 
-    secret_key= [44, 98, 215, 237, 34, 123, 89, 247, 206, 196, 165, 5, 232, 42, 79, 158, 27, 20, 165, 137, 124, 155, 216, 126, 167, 178, 46, 57, 164, 181, 156, 43].pack('C*')
+    secret_key = [44, 98, 215, 237, 34, 123, 89, 247, 206, 196, 165, 5, 232, 42, 79, 158, 27, 20, 165, 137, 124, 155, 216, 126, 167, 178, 46, 57, 164, 181, 156, 43].pack('C*')
     from_key =  Solana::Key.new(secret_key)
     to_pubkey = '3wh7S43AJW5FyYnJUFbhn7hBvSSfuQbPozmf1xMohWiX'
 
     tx = Solana::Tx.new
-    instruction = Solana::Program::System.transfer(from_pubkey: from_key.address, to_pubkey: to_pubkey, lamports: 3000)
+    instruction = Solana::Program::System.transfer_instruction(from_pubkey: from_key.address, to_pubkey: to_pubkey, lamports: 3000)
     tx.add(instruction)
     tx.recent_blockhash = client.get_recent_blockhash
     tx.fee_payer = from_key.address
-    tx.sign([from_key]) 
-    string = Base64.strict_encode64(tx.serialize.pack('C*'))
-    client.send_transaction(string)
+    tx.sign([from_key])
+    client.send_transaction(tx.to_base64)
 
 ## Development
 

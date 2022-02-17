@@ -6,7 +6,7 @@ module Solana
     PACKET_DATA_SIZE = 1280 - 40 - 8
     DEFAULT_SIGNATURE = Array.new(64, 0)
 
-    attr_accessor :recent_blockhash, :fee_payer, :signatures, :instructions
+    attr_accessor :recent_blockhash, :fee_payer, :signatures, :instructions, :message
 
     def initialize(recent_blockhash:nil, signatures:[] , instructions:[], fee_payer:nil)
       @recent_blockhash = recent_blockhash
@@ -29,6 +29,7 @@ module Solana
 
     def self.populate(message, signatures)
       tx = self.new
+      tx.message = message
       tx.recent_blockhash = message.recent_blockhash
       tx.fee_payer = message.account_keys[0] if (message.header[:num_required_signatures] > 0)
 
@@ -55,7 +56,7 @@ module Solana
           {
             keys: keys,
             program_id: message.account_keys[instruction[:program_id_index]],
-            data: Utils.base58_to_bytes(instruction[:data]),
+            data: instruction[:data],
           })
       end
       tx
@@ -83,6 +84,32 @@ module Solana
       wire_transaction += sign_data
       wire_transaction
     end
+
+    def to_base64
+      Base64.strict_encode64(serialize.pack('C*'))
+    end
+
+    def add(item)
+      instructions.push(item)
+    end
+
+    def sign(keys)
+      raise 'No signers' unless keys.any?
+
+      keys = keys.uniq{|k| k.address }
+      @signatures = keys.map do |key|
+        {
+          signature: nil,
+          public_key: key.address
+        }
+      end
+
+      message = compile_message
+      partial_sign(message, keys)
+      true
+    end
+
+    private
 
     def serialize_message
       compile.serialize
@@ -218,7 +245,7 @@ module Solana
         {
           program_id_index: account_keys.index(instruction[:program_id]),
           accounts: instruction[:keys].map{|meta| account_keys.index(meta[:pubkey])},
-          data: Utils.bytes_to_base58(instruction[:data])
+          data: instruction[:data]
         }
       end
 
@@ -237,27 +264,6 @@ module Solana
       )
     end
 
-    def add(item)
-      instructions.push(item)
-    end
-
-    def sign(keys)
-      raise 'No signers' unless keys.any?
-
-      keys = keys.uniq{|k| k.address }
-      @signatures = keys.map do |key|
-        {
-          signature: nil,
-          public_key: key.address
-        }
-      end
-
-      message = compile_message
-      partial_sign(message, keys)
-      true
-      # verify_signatures(message.serialize, true)
-    end
-
     def partial_sign(message, keys)
       sign_data = message.serialize
       keys.each do |key|
@@ -273,23 +279,5 @@ module Solana
 
       @signatures[index][:signature] = signature
     end
-
-    # def _verifySignatures(sign_data: Buffer, requireAllSignatures: boolean): boolean {
-    #   for (const {signature, publicKey} of this.signatures) {
-    #     if (signature === null) {
-    #       if (requireAllSignatures) {
-    #         return false;
-    #       }
-    #       } else {
-    #         if (
-    #           !nacl.sign.detached.verify(sign_data, signature, publicKey.toBuffer())
-    #         ) {
-    #           return false;
-    #         }
-    #         }
-    #         }
-    #         return true;
-    #         }
-    # end
   end
 end

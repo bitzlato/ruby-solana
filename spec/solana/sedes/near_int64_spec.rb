@@ -5,12 +5,12 @@ RSpec.describe Solana::Sedes::NearInt64 do
   it "serializes" do
     near_int = Solana::Sedes::NearInt64.new
     result = near_int.serialize(3000)
-    expect(result.bytes).to eq(bytes)
+    expect(result).to eq(bytes)
   end
 
-  # it "deserializes" do
-  #   near_int = Solana::Sedes::NearInt64.new
-  #   result = near_int.deserialize(bytes.pack('C*'))
-  #   expect(result).to eq(number)
-  # end
+  it "deserializes" do
+    near_int = Solana::Sedes::NearInt64.new
+    result = near_int.deserialize(bytes)
+    expect(result).to eq(number)
+  end
 end

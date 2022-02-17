@@ -1,10 +1,12 @@
 module Solana
   module Sedes
     class UnsignedInt
+      attr_reader :size
+
       BITS = {
         8 => {directive: 'C*', size: 1},
-        32 => {directive: 'L* ', size: 4},
-        64 => {directive: 'Q* ', size: 8}
+        32 => {directive: 'L*', size: 4},
+        64 => {directive: 'Q*', size: 8}
       }
 
       def initialize(bits)
@@ -23,14 +25,13 @@ module Solana
           raise "Integer too large (does not fit in #{@size} bytes)"
         end
 
-        [obj].pack(@directive)
+        [obj].pack(@directive).bytes
       end
 
-      def deserialize(serial)
-        raise "Invalid serialization (wrong size)" if @size && serial.size != @size
-        raise "Invalid serialization (not minimal length)" if !@size && serial.size > 0 && serial[0] == BYTE_ZERO
+      def deserialize(bytes)
+        raise "Invalid serialization (wrong size)" if @size && bytes.size != @size
 
-        serial.unpack(@directive).first
+        bytes.pack('C*').unpack(@directive).first
       end
     end
   end

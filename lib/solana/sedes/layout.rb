@@ -9,15 +9,27 @@ module Solana
 
       def serialize(params)
         fields.map do |field, type|
+          sede = if type.is_a?(Symbol)
+                   Solana::Sedes.send(type)
+                 else
+                   type
+                 end
 
-          klass = if type.is_a?(Symbol)
-                    Solana::Sedes.send(type)
-                  else
-                    type
-                  end
+          sede.serialize(params[field])
+        end.flatten
+      end
 
-          klass.serialize(params[field])
-        end.join
+      def deserialize(bytes)
+        result = {}
+        fields.map do |field, type|
+          sede = if type.is_a?(Symbol)
+                   Solana::Sedes.send(type)
+                 else
+                   type
+                 end
+          result[field] = sede.deserialize(bytes.shift(sede.size))
+        end
+        result
       end
     end
   end

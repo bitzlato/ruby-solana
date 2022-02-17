@@ -1,4 +1,5 @@
 require 'base58'
+require 'digest/sha2'
 
 module Solana
   class Utils
@@ -38,6 +39,10 @@ module Solana
 
       def base58_to_bytes(string)
         Base58.base58_to_binary(string, :bitcoin).bytes
+      end
+
+      def sha256(data)
+        "0x" + (Digest::SHA256.hexdigest(data))
       end
     end
   end

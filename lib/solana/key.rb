@@ -10,6 +10,10 @@ module Solana
                 end
     end
 
+    def seed
+      @ed_key.seed
+    end
+
     def private_key
       @ed_key.to_bytes
     end

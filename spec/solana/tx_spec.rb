@@ -46,7 +46,7 @@ RSpec.describe Solana::Tx do
 
       it "serializes new transfer tx" do
         tx =  Solana::Tx.new
-        instruct = Solana::Program::System.transfer(from_pubkey: from_key.address, to_pubkey: to_pubkey, lamports: 1000)
+        instruct = Solana::Program::System.transfer_instruction(from_pubkey: from_key.address, to_pubkey: to_pubkey, lamports: 1000)
         tx.add(instruct)
         tx.recent_blockhash = blockhash
         tx.fee_payer = from_key.address
@@ -90,7 +90,7 @@ RSpec.describe Solana::Tx do
 
       it "serializes new transfer tx" do
         tx =  Solana::Tx.new
-        instruct = Solana::Program::Token.transfer_checked(program_params)
+        instruct = Solana::Program::Token.transfer_checked_instruction(program_params)
         tx.add(instruct)
         tx.recent_blockhash = blockhash
         tx.fee_payer = from_key.address

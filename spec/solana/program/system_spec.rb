@@ -12,7 +12,7 @@ RSpec.describe Solana::Program::System do
   }}
 
   it "generates valid signature" do
-    res = Solana::Program::System.transfer(from_pubkey: from, to_pubkey: to, lamports: 3000)
+    res = Solana::Program::System.transfer_instruction(from_pubkey: from, to_pubkey: to, lamports: 3000)
     expect(res).to eq(result)
   end
 end

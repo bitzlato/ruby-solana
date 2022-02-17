@@ -9,7 +9,14 @@ module Solana
       def serialize items
         items.map do |item|
           @type.serialize(item)
-        end.join
+        end.flatten
+      end
+
+      def deserialize bytes
+        @count.times.map do
+          current_bytes = bytes.shift(@type.size)
+          @type.deserialize(current_bytes)
+        end
       end
     end
   end
