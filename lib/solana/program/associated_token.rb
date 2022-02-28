@@ -3,6 +3,7 @@ module Solana
     class AssociatedToken < Base
       PROGRAM_ID = 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL'
       MAX_SEED_LENGTH = 32
+      LAMPORTS_FOR_TOKEN = 2039280
 
       class << self
         def create_associated_token_account_instruction(payer_pubkey:, associated_account_pubkey:, owner_pubkey:, token_pubkey:)
